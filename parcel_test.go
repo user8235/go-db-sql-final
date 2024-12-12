@@ -48,7 +48,6 @@ func TestAddGetDelete(t *testing.T) {
 	id, err := store.Add(parcel)
 
 	require.NoError(t, err)
-	fmt.Println("iiiiiiiiiiiidddddddddd -", id)
 	require.NotEmpty(t, id)
 	// get
 	// получите только что добавленную посылку, убедитесь в отсутствии ошибки
@@ -147,7 +146,7 @@ func TestGetByClient(t *testing.T) {
 	defer db.Close()
 
 	store := NewParcelStore(db)
-	parcel := getTestParcel()
+	//parcel := getTestParcel()
 
 	parcels := []Parcel{
 		getTestParcel(),
@@ -161,15 +160,15 @@ func TestGetByClient(t *testing.T) {
 	parcels[0].Client = client
 	parcels[1].Client = client
 	parcels[2].Client = client
+	fmt.Println(parcels)
 
 	// add
 	for i := 0; i < len(parcels); i++ {
 		// добавьте новую посылку в БД, убедитесь в отсутствии ошибки и наличии идентификатора
-		id, err := store.Add(parcel)
-
+		id, err := store.Add(parcels[i])
 		require.NoError(t, err)
 		require.NotEmpty(t, id)
-		// обновляем идентификатор добавленной у посылки
+		// обновляем идентификатор y добавленной посылки
 		parcels[i].Number = id
 
 		// сохраняем добавленную посылку в структуру map, чтобы её можно было легко достать по идентификатору посылки
@@ -178,6 +177,7 @@ func TestGetByClient(t *testing.T) {
 
 	// get by client
 	storedParcels, err := store.GetByClient(client) // получите список посылок по идентификатору клиента, сохранённого в переменной client
+
 	// убедитесь в отсутствии ошибки
 	// убедитесь, что количество полученных посылок совпадает с количеством добавленных
 	require.NoError(t, err)
