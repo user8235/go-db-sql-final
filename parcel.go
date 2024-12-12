@@ -3,6 +3,7 @@ package main
 import (
 	"database/sql"
 	"fmt"
+	"log"
 )
 
 type ParcelStore struct {
@@ -22,8 +23,8 @@ func (s ParcelStore) Add(p Parcel) (int, error) {
 		sql.Named("address", p.Address),
 		sql.Named("created_at", p.CreatedAt))
 	if err != nil {
-		fmt.Println("Error during 'Add' operation:", err)
-		return 0, nil
+		fmt.Println("Error during 'Add' operation:")
+		return 0, err
 	}
 	// верните идентификатор последней добавленной записи
 	lastID, err := result.LastInsertId()
@@ -62,21 +63,29 @@ func (s ParcelStore) GetByClient(client int) ([]Parcel, error) {
 	defer rows.Close()
 	// заполните срез Parcel данными из таблицы
 	var res []Parcel
-	for rows.Next() {
-		var (
-			num   int
-			cl    int
-			stat  string
-			addr  string
-			creat string
-		)
+	p := Parcel{}
 
-		err := rows.Scan(&num, &cl, &stat, &addr, &creat)
+	for rows.Next() {
+		// var (
+		// 	num   int
+		// 	cl    int
+		// 	stat  string
+		// 	addr  string
+		// 	creat string
+		// )
+
+		//err := rows.Scan(&num, &cl, &stat, &addr, &creat)
+		err := rows.Scan(&p.Number, &p.Client, &p.Status, &p.Address, &p.CreatedAt)
 		if err != nil {
-			fmt.Println("Error during 'GetByClient' operation:", err)
+			fmt.Println("Error during 'GetByClient' operation:")
 			return nil, err
 		}
-		res = append(res, Parcel{Number: num, Client: cl, Status: stat, Address: addr, CreatedAt: creat})
+		//res = append(res, Parcel{Number: num, Client: cl, Status: stat, Address: addr, CreatedAt: creat})
+		res = append(res, Parcel{Number: p.Number, Client: p.Client, Status: p.Status, Address: p.Address, CreatedAt: p.CreatedAt})
+	}
+	err = rows.Err()
+	if err != nil {
+		log.Fatal(err)
 	}
 	return res, nil
 }
@@ -111,18 +120,20 @@ func (s ParcelStore) SetAddress(number int, address string) error {
 func (s ParcelStore) Delete(number int) error {
 	// реализуйте удаление строки из таблицы parcel
 	// удалять строку можно только если значение статуса registered
-	var status string
-	err := s.db.QueryRow("SELECT status FROM parcel WHERE number = :id", sql.Named("id", number)).Scan(&status)
-	if err != nil {
-		fmt.Println("Error during 'Delete' operation:", err)
-		return err
-	}
-	if status != ParcelStatusRegistered {
-		fmt.Println("Parcel status is NOT registered! Delet is deny!")
-		return nil
-	}
+	//var status string
+	// err := s.db.QueryRow("SELECT status FROM parcel WHERE number = :id AND status = :status", sql.Named("id", number)).Scan(&status)
+	// if err != nil {
+	// 	fmt.Println("Error during 'Delete' operation:", err)
+	// 	return err
+	// }
+	// if status != ParcelStatusRegistered {
+	// 	fmt.Println("Parcel status is NOT registered! Delet is deny!")
+	// 	return nil
+	// }
 
-	_, err = s.db.Exec("DELETE FROM parcel WHERE number = :id", sql.Named("id", number))
+	_, err := s.db.Exec("DELETE FROM parcel WHERE number = :id AND status = :status",
+		sql.Named("id", number),
+		sql.Named("status", ParcelStatusRegistered))
 	if err != nil {
 		fmt.Println("Error during 'Delete' operation:", err)
 		return err

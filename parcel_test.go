@@ -35,9 +35,8 @@ func TestAddGetDelete(t *testing.T) {
 	// prepare
 	// настройте подключение к БД
 	db, err := sql.Open("sqlite", "tracker.db")
-	if err != nil {
-		require.NoError(t, err)
-	}
+
+	require.ErrorIs(t, err, nil)
 	defer db.Close()
 
 	store := NewParcelStore(db)
@@ -55,6 +54,7 @@ func TestAddGetDelete(t *testing.T) {
 	p, err := store.Get(id)
 	require.NoError(t, err)
 
+	require.ErrorIs(t, err, sql.ErrNoRows)
 	assert.Equal(t, p.Number, parcel.Number, "they should be equal")
 	assert.Equal(t, p.Client, parcel.Client, "they should be equal")
 	assert.Equal(t, p.Status, parcel.Status, "they should be equal")
