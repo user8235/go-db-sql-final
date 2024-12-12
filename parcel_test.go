@@ -98,7 +98,10 @@ func TestSetStatus(t *testing.T) {
     defer db.Close()
 	// add
 	// добавьте новую посылку в БД, убедитесь в отсутствии ошибки и наличии идентификатора
+    id, err := store.Add(parcel)
 
+    require.NoError(t, err)
+    require.NotEmpty(t, id)
 	// set status
 	// обновите статус, убедитесь в отсутствии ошибки
 
